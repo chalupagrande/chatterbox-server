@@ -18,13 +18,67 @@ var defaultCorsHeaders = {
   "access-control-max-age": 10 // Seconds.
 };
 
-  var messages={ results : [
-    // {username:'vishal', text: 'hola',roomname:'starter'},
-    // {username:'Jamie', text:'I whatever',roomname:'starter'}
-    ]
+  var messages={
+  
+   };
+
+  var responseData = function(response, code, data) {
+    response.writeHead(code, headers);
+    response.end(data);
   };
 
+var headers = defaultCorsHeaders;
+headers['Content-Type'] = "application/json";
+
+
+var Router = {
+  'GET': function(request, response){
+    if(validRequest(request.url)){
+      var data = JSON.stringify(messages[request.url])
+      responseData(response ,200, data);
+    }
+  },
+  'POST': function(request, response){
+    var fullbody = '';
+    if(validRequest(request.url)){
+      request.on('data', function(data){
+        fullbody+=data;
+      })
+      request.on('end',function () {
+       var refromed= JSON.parse(fullbody);
+       messages[request.url].results.push(refromed);
+      })
+      responseData(response,201,'posted')
+    }
+  }
+}
+
+var validRequest = function(url){
+  if(url.indexOf('classes') > -1){
+    if(messages[url] === undefined){
+      messages[url] = { results : [] };
+    }
+    return true;
+  }
+  return false;
+}
+
+// Routes.get('/classes/messages', function(req, res) {
+//   response.writeHead(200, headers);
+//   response.end(messages);
+// })
+
+
 exports.requestHandler = function(request, response) {
+
+  // if(routes[request.method]){
+  //   if(rountes[request.method][request.url]){
+  //     routes[request.url](request, response)
+  //   }
+  // } else {
+  //   response.writeHead(501, headers)
+  //   response.end()
+  // }
 
   // Request and Response come from node's http module.
   //
@@ -41,53 +95,35 @@ exports.requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log("Serving request type " + request.method + " for url " + request.url);
-  // console.log(request);
+
   // The outgoing status.
   var statusCode = 200;
 
   // See the note below about CORS headers.
-  var headers = defaultCorsHeaders;
+ 
 
   // Tell the client we are sending them plain text.
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = "application/json";
+
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
+
+
   
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  //this is US
+  
+  // console.log(routes[request.method][request.url]);
 
-
-  if(request.method==='GET' && (request.url==='/classes/messages'||request.url === '/classes/room1')){ 
-    response.writeHead(statusCode, headers);
-    response.write(JSON.stringify(messages));
-    response.end();
-     //return results
+  if(Router[request.method]){
+    Router[request.method](request,response);
+  }else{
+    response.writeHead(404, headers);
+    response.end("Hello, World!");
   }
-  else if(request.method==='POST' && (request.url==='/classes/messages'||request.url === '/classes/room1')){
-    var fullbody= '';
-     request.on('data', function(data){
-      fullbody+=data;
-     })
-     request.on('end',function () {
-       var refromed= JSON.parse(fullbody);
-       messages.results.push(refromed);
-     })
-    response.writeHead( 201, headers);
-    response.write('good job')
-    response.end();
-        
-  }
-
-
-
-
-
-
 
 
   // Make sure to always call response.end() - Node may not send
@@ -97,8 +133,6 @@ exports.requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.writeHead(404, headers);
-  response.end("Hello, World!");
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).

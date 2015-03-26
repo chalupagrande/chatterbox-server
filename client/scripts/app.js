@@ -1,9 +1,5 @@
 // YOUR CODE HERE:
-	/* var message = {
-	  username: 'shawndrost',
-	  text: 'trololo',
-	  roomname: '4chan'
-	};*/
+
 var app =  {
 init:function () {
 app.fetch();
@@ -23,7 +19,7 @@ send:function(message){
   url: app.server+'/classes/messages',
   type: 'POST',
   data: JSON.stringify(message),
-  contentType: 'application/json',
+  contentType: 'text/plain',
   success: function (data) {
     console.log('chatterbox: Message sent');
   },
@@ -40,9 +36,8 @@ fetch: function(input){
 	 $.ajax({	
 		url: app.server+"/classes/messages",
 		type: 'GET',
-		contentType: 'application/json',
+		contentType: 'text/plain',
 		success: function (data) {
-      debugger;
 			app['returnData'] = data.results;
 			app['rooms']={}
       console.log("this:",app['returnData'])
@@ -100,7 +95,6 @@ newMessage:function(){
   app.send(message);
   app.init();
   setTimeout(function(){app.showRoom(app.currentroom); }, 1000);
-  console.log(message);
 },
 addRoom:function(newRoom){
   	var room = '<div class="room" data-room="' + newRoom + '">' + newRoom + '</div>';
@@ -111,7 +105,6 @@ autoaddroom: function(){
 	for(var r in app.rooms){
 		if(!(r in app['roomdone'])){
 			app.addRoom(''+r);
-			console.log(r)
 			app['roomdone'][r]=0;
 		}
 	}
@@ -140,12 +133,10 @@ $(document).ready(function(){
 	//event listener for room selection:
   $('#roomSelect').on('click','.room', function(){
     var room = $(this).data('room');
-  	// console.log(app.rooms[room]);
 	app.showRoom(room);
    });
   $('#submit').on('click', function(){
   	app.newMessage();
-  	console.log("clicks")
 
   })
   var loggedin = false;
@@ -154,30 +145,31 @@ $(document).ready(function(){
  
   	$('#login').hide();
   	$('#username').hide();
-   	$.ajax({
-		url: app.server,
-		type: 'GET',
-		//data: 'where={"name":"'+login.name+'"}',
-		contentType: 'application/json',
-		success: function(data){
-			if(data.results.length===1){login['id']=data.results[0]['objectId'];
-				login['Friend']= data.results[0]['friends'];
-			}
-			else{var userinfo={'name':login['name'],
-					'friends':[]
-				};
-				login['Friend'] = [];
-				app.send(userinfo);
-			}
-			console.log();
-			//if array is 1 do{pull friends to local and push later} else no 
-		},
-		error:function(){}
+    login['id']=data.results[0]['objectId'];
+  //  	$.ajax({
+		// url: app.server,
+		// type: 'GET',
+		// //data: 'where={"name":"'+login.name+'"}',
+		// contentType: 'text/plain',
+		// success: function(data){
+		// 	if(data.results.length===1){login['id']=data.results[0]['objectId'];
+		// 		login['Friend']= data.results[0]['friends'];
+		// 	}
+		// 	else{var userinfo={'name':login['name'],
+		// 			'friends':[]
+		// 		};
+		// 		login['Friend'] = [];
+		// 		app.send(userinfo);
+		// 	}
+		// 	console.log();
+		// 	//if array is 1 do{pull friends to local and push later} else no 
+		// },
+		// error:function(){}
 
-  	});
+  // 	});
   });
 	app.init();
-	setInterval(function(){app.init()},20000);
+	setInterval(function(){app.init()},10000);
 		var node;
 	$("#chats").on('click', '.username', function(){
 		var name = $(this).data('name');
