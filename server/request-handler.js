@@ -18,7 +18,14 @@ var defaultCorsHeaders = {
   "access-control-max-age": 10 // Seconds.
 };
 
+  var messages={ results : [
+    // {username:'vishal', text: 'hola',roomname:'starter'},
+    // {username:'Jamie', text:'I whatever',roomname:'starter'}
+    ]
+  };
+
 exports.requestHandler = function(request, response) {
+
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -49,22 +56,32 @@ exports.requestHandler = function(request, response) {
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
-  response.writeHead(statusCode, headers);
+  
 
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //this is US
 
-  var messages={ results : [
-    {'username':'vishal', 'text': 'hola','roomname':'starter'},
-    {'username':'Jamie', 'text':'I whatever','roomname':'starter'}]};
 
-  if(request.method==='GET' && request.url === "/messages"){ 
+  if(request.method==='GET' && (request.url==='/classes/messages'||request.url === '/classes/room1')){ 
     response.writeHead(statusCode, headers);
     response.write(JSON.stringify(messages));
     response.end();
      //return results
   }
-
+  else if(request.method==='POST' && (request.url==='/classes/messages'||request.url === '/classes/room1')){
+    var fullbody= '';
+     request.on('data', function(data){
+      fullbody+=data;
+     })
+     request.on('end',function () {
+       var refromed= JSON.parse(fullbody);
+       messages.results.push(refromed);
+     })
+    response.writeHead( 201, headers);
+    response.write('good job')
+    response.end();
+        
+  }
 
 
 
@@ -80,6 +97,7 @@ exports.requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
+  response.writeHead(404, headers);
   response.end("Hello, World!");
 };
 
